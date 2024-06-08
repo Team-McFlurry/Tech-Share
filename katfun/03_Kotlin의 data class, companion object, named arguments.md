@@ -445,3 +445,78 @@ internal class CompanionObjectTest {
 
 ## Named Arguments
 
+### 예시
+
+앞의 두 주제를 다루면서, 예제 코드에 이런 내용이 있던 점 기억하시나요?
+
+```kotlin
+private val katfun = User(
+    id = 1L,
+    name = "정규호",
+    age = 20,
+    address = Address(
+        country = "Korea, Republic Of",
+        city = "Yongin-si, Gyeonggi-do",
+        street = "Katfun-ro 6",
+        detail = "Bldg 1557, Room 88848",
+        postalNumber = 12345
+    )
+)
+```
+
+여기서 left operand는 각 필드명을 가리킵니다. 이를 `named arguments`라고 부르는데요, 사실 없어도 상관 없습니다.
+
+```kotlin
+private val katfun = User(
+    1L,
+    "정규호",
+    20,
+    Address(
+        "Korea, Republic Of",
+        "Yongin-si, Gyeonggi-do",
+        "Katfun-ro 6",
+        "Bldg 1557, Room 88848",
+        2345
+    )
+)
+```
+
+IntelliJ에서 볼 때는 이렇게 보이는데요,
+
+![Screenshot 2024-06-08 at 20.53.09](../../kchung1995.github.io/assets/images/Screenshot%202024-06-08%20at%2020.53.09.png)
+
+GitHub에서는 어떻게 보일까요?
+
+### 소개
+
+Kotlin에서는 named arguments라는 개념이 존재합니다. 생성자 혹은 함수의 파라미터에 값을 할당할 때, 할당하고자 하는 필드 명을 명시할 수 있습니다. [Named, default arguments를 소개하는 baeldung 문서](This version of the code is more self-documenting and easier to double-check.)에서는 다음과 같이 소개합니다.
+
+> This version of the code is more self-documenting and easier to double-check.
+
+실제로 위의 두 코드를 보았을 때, 어떤 쪽이 더 읽기 편하신가요?
+
+named arguments 사용은 필수는 아니지만, **실수를 줄여 주고**, 가독성을 향상시켜 줍니다. 순서도 맘대로 바꿔서 사용할 수 있고요.
+
+```kotlin
+fun thisIsAStupidExample(
+    hasId: Boolean,
+    hasName: Boolean,
+    hasAge: Boolean,
+    hasAddress: Boolean,
+    hasIdAndName: Boolean,
+    hasIdAndAge: Boolean,
+    hasIdAndAddress: Boolean
+) {
+    // here comes some implementations
+}
+```
+
+이런 메서드가 있다면, 사용하면서 단 한 번도 실수하지 않으실 자신이 있으신가요?
+
+개인적으로 생각하는 named arguments 사용 시의 단점은 아래와 같습니다.
+
+* 귀찮다.
+* 코드가 길어진다.
+  * 코드가 길어지는 것만으로 단점이라고 할 수 있는가?
+* (클래스의 경우) 생성자를 수정하거나, (메서드의 경우) 파라미터를 수정하는 경우 관련 코드를 전부 수정해야 함.
+  * 오히려 놓칠 수 있는 부분을 확인하는 역할이라고 생각
