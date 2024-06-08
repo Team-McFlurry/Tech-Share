@@ -483,7 +483,7 @@ private val katfun = User(
 
 IntelliJ에서 볼 때는 이렇게 보이는데요,
 
-![named_arguments_intellij](../resources/named_arguments_intellij.png)
+![named_arguments_intellij](./resources/week03/named_arguments_intellij.png)
 
 GitHub에서는 어떻게 보일까요?
 
