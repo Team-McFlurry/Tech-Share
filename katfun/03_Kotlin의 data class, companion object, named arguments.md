@@ -365,7 +365,83 @@ val katfunWithNewName = katfun.copy(name = "정카펀")
 
 ## Companion Object
 
+### Object Declarations
+
+Koitlin의 클래스는 companion object, 즉 동반 객체라고 하는 것을 가질 수 있습니다.
+
+그러러면 우선 object declaration에 대해 알아야 합니다. Kotlin에는 object declaration이라는 것이 있는데요, (object expressions과는 약간 다릅니다)
+
+```kotlin
+object EntityConverter {
+    fun requestToEntity(request: SomeRequest): SomeEntity {
+        // ...
+    }
+}
+```
+
+위와 같이 정의하여 사용합니다. **특정 인스턴스에 독립적**인 내용들을 주로 담아 사용합니다.
+
+장점으로는,
+
+* 별도의 subclass 정의 없이 기능을 작성할 수 있다.
+* **싱글톤**이다 (실제 초기화는 lazy하게 처리)
+
+### Companion Object
+
+이러한 object declaration이 특정 class 내에 들어 있게 되면, 이를 `companion object`라고 부릅니다. 쉽게 말하자면, '이 클래스와 관련 있는 여러 기능들 및 상수들을 정의'해 두기 위한 공간이라고 볼 수 있습니다.
+
+저는 보통 아래 목적으로 사용합니다.
+
+* factory method 정의
+* 관련 exception message와 같은 상수 정의
+* (test 시) stub 객체 생성
+  * 이건 일반 object declaration으로도 많이 사용합니다.
+
+```kotlin
+class Birthday private constructor(
+    val birthday: LocalDate
+) {
+    companion object {
+        private const val BIRTHDAY_INVALID = "생일 날짜가 잘못되었습니다."
+
+        // factory method
+        fun of(input: LocalDate, now: LocalDate = LocalDate.now()): Birthday {
+            require(input <= now) { BIRTHDAY_INVALID }
+            return Birthday(input)
+        }
+    }
+}
+
+internal class CompanionObjectTest {
+    @Test
+    fun birthdayExample() {
+        val birthdayTest = LocalDate.of(2022, 12, 19)
+        val birthdayInstance = Birthday.of(birthdayTest)
+        println(birthdayInstance)
+
+        val invalidBirthday = LocalDate.of(2025, 12, 19)
+        val invalidException = assertThrows<IllegalArgumentException> { Birthday.of(invalidBirthday) }
+        assertThat(invalidException.message).isEqualTo("생일 날짜가 잘못되었습니다.")
+
+        println("first one: ${birthdayInstance.birthday}")
+    }
+}
+```
+
+### References
+
+* [Effective Kotlin Item 48. Consider Using Object Declarations](https://kt.academy/article/ek-object-declarations)
+* [Kotlin Object expressions and declarations](https://kotlinlang.org/docs/object-declarations.html#object-declarations-overview)
+
+### 번외. Factory Method?
+
+[Wikipedia](https://en.wikipedia.org/wiki/Factory_method_pattern)에서는 아래와 같이 정의합니다.
+
+> the **factory method pattern** is a [creational pattern](https://en.wikipedia.org/wiki/Creational_pattern) that uses factory methods to deal with the problem of [creating objects](https://en.wikipedia.org/wiki/Object_creation) without having to specify their exact [class](https://en.wikipedia.org/wiki/Class_(computer_programming)).
+
+이 내용 역시 [Effective Kotlin Item 32](https://kt.academy/article/ek-factory-functions)에서도 다루고 있는데요. Secondary constuctor를 정의하는 대신 factory methods (functions)를 정의해서 사용하는 것을 추천하고 있습니다.
+
+위의 코드에서는 `Birthday.of()`가 factory method의 한 예입니다. 저 경우에는 Birthday 인스턴스를 만들기 위해 반드시 factory method 및 내부의 검증 로직을 거치도록, `private constructor`를 통해 생성자를 private 처리 하였습니다.
+
 ## Named Arguments
-
-
 
