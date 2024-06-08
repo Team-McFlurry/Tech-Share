@@ -24,7 +24,7 @@ data class를 사용하는 가장 큰 이유는, 컴파일러가 데이터를 �
 * `.componentN()`
 * `.copy()`
 
-자세한 내용은 예제 코드를 참고하세요.
+자세한 내용은 [예제 코드](https://github.com/kchung1995/Tech-Share-Sample-Codes/blob/main/src/test/kotlin/com/katfun/tech/share/sample/codes/week03/Week03DataClassExamples.kt)를 참고하세요.
 
 ### Getting Hands Dirty
 
@@ -388,7 +388,7 @@ object EntityConverter {
 
 ### Companion Object
 
-이러한 object declaration이 특정 class 내에 들어 있게 되면, 이를 `companion object`라고 부릅니다. 쉽게 말하자면, '이 클래스와 관련 있는 여러 기능들 및 상수들을 정의'해 두기 위한 공간이라고 볼 수 있습니다.
+이러한 object declaration이 특정 class 내에 들어 있게 되면, 이를 `companion object`라고 부릅니다. 쉽게 말하자면, '이 클래스와 관련 있는 여러 기능들 및 상수들을 정의'해 두기 위한 공간이라고 볼 수 있습니다. [예제 코드를 참고](https://github.com/kchung1995/Tech-Share-Sample-Codes/blob/main/src/test/kotlin/com/katfun/tech/share/sample/codes/week03/Week03CompanionObjectExamples.kt)하세요.
 
 저는 보통 아래 목적으로 사용합니다.
 
@@ -483,7 +483,7 @@ private val katfun = User(
 
 IntelliJ에서 볼 때는 이렇게 보이는데요,
 
-![Screenshot 2024-06-08 at 20.53.09](../../kchung1995.github.io/assets/images/Screenshot%202024-06-08%20at%2020.53.09.png)
+![named_arguments_intellij](./resources/named_arguments_intellij.png)
 
 GitHub에서는 어떻게 보일까요?
 
@@ -495,7 +495,7 @@ Kotlin에서는 named arguments라는 개념이 존재합니다. 생성자 혹�
 
 실제로 위의 두 코드를 보았을 때, 어떤 쪽이 더 읽기 편하신가요?
 
-named arguments 사용은 필수는 아니지만, **실수를 줄여 주고**, 가독성을 향상시켜 줍니다. 순서도 맘대로 바꿔서 사용할 수 있고요.
+named arguments 사용은 필수는 아니지만, **실수를 줄여 주고**, 가독성을 향상시켜 줍니다. 순서도 맘대로 바꿔서 사용할 수 있고요. [예를 들어](https://github.com/kchung1995/Tech-Share-Sample-Codes/blob/main/src/test/kotlin/com/katfun/tech/share/sample/codes/week03/Week03NamedArgumentsExamples.kt),
 
 ```kotlin
 fun thisIsAStupidExample(
