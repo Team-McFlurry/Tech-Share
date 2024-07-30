@@ -278,3 +278,87 @@ $.ajax({
 
 ## MyBatis의 매핑 원리와 세팅 옵션 이해하기
 
+데이터베이스에서 데이터를 가져온 후 자바 객체에 값을 넣기 위해 MyBatis는 `결과 매핑`이라는 기법을 제공합니다. 그 `결과 매핑`을 처리하기 위해 매핑 구문을 정의할 때처럼 XML 엘리먼트나 애노테이션을 사용할 수 있습니다.
+
+마이바티스의 결과 매핑은 **칼럼명과 자바 모델(클래스)의 필드명** 혹은 **setter 메서드가 설정하고자 하는 값**과 일치하면 자동으로 값을 넣어줍니다.
+
+하지만 칼럼명과 일치하지 않는다면 별도로 값을 설정하는 규칙을 정의해야만 정확히 값을 설정할 수 있습니다.  
+이렇게 일치하지 않는 경우에 제가 겪었던 상황에서 활용할 수 있는, 값을 설정해주기 위해 제공하는 XML 엘리먼트는 다음과 같습니다.
+
+- resultMap : 결과 매핑을 사용하기 위한 가장 상위 엘리먼트
+  - 결과 매핑을 구분하기 위한 id 속성과, 매핑하는 대상 클래스를 정의하는 type 속성을 사용
+  - 예) 
+      ```xml
+      <resultMap id="EmpSalaryMap" type="EmpSalaryVO">
+      ...
+      </resultMap>
+      ```
+  - id : 기본 키에 해당되는 값을 설정
+  - result : 기본 키가 아닌 나머지 칼럼에 대해 매핑
+  - constructor : setter 메서드나 리플렉션을 통해 값을 설정하지 않고 **생성자를 통해 값을 설정할 때** 사용
+    - idArg : ID 인자
+    - arg : 생성자에 삽입되는 일반적인 결과
+  
+
+
+
+한 경우는
+- 결과 타입을 지정할 때 resultType 속성을 사용했고
+- 예시 매핑 구문에서 각 칼럼에 대해 Alias를 사용했다.
+다른 경우는
+- 결과 타입을 지정할 때 resultMap을 사용했지만
+- 여기 예시에서는 별칭을 사용하지 않았다.
+
+댓글 번호에 해당하는 comment_no 칼럼의 값을 모델 객체에 자동으로 설정하기 위해서는 대상 모델 클래스가 comment_no 이름의 필드를 갖거나 setComment_no 이름의 setter 메서드를 가져야만 한다.
+하지만 여기서 칼럼과 모델 클래스의 필드와 메서드는 이름이 다르기 때문에 자동으로 값을 설정할 수 없다.
+
+즉, comment_no 칼럼의 값을 commentNo 필드나 setCommentNo 이름의 setter 메서드를 사용하게 규칙을 정의해줘야 하는 상황이 되는 셈이다.
+
+그렇다면 comment_no 칼럼의 값을 commmentNo 필드에 설정하기 위한 결과 매핑을 설정해보자.
+
+```xml
+<resultMap id="BaseResultMap" type="ldg.mybatis.model.Comment">
+    <id column="comment_no" jdbcType="BIGINT" property="commentNo" />
+    <result column="user_id" jdbcType="VARCHAR" property="userId" />
+</resultMap>
+```
+
+위의 resultMap은 댓글을 조회하는 SQL에서 별칭을 사용하지 않는 칼럼 값을 모델 객체에 설정하는 결과 매핑 설정이다.
+결과 매핑을 정의하는 resultMap 엘리먼트 하위에 둔 각각의 엘리먼트에서 대상 칼럼명은 column 속성에 선언하고, 모델 클래스에서 설정하고자 하는 필드명은 property 속성에 선언하면 된다.
+
+- 결과 매핑의 아이디는 BaseResultMap이고, resultMap 속성에서 사용한다. 대상 클래스의 타입은 ldg.mybatis.model.Comment다. 이 결과 매핑을 사용해 반환되는 타입은 댓글 또는 댓글을 갖는 List 객체다.
+- id 엘리먼트는 기본 키의 칼럼을 지정할 때 사용한다. 댓클 테이블의 기본 키는 댓글 번호인 comment_no 칼럼이다.
+- comment_no 칼럼은 property 속성을 commentNo로 했기 때문에 댓글 객체의 commentNo 필드에 리플렉션으로 값을 설정하거나 setCommentNo 메서드를 사용해서 값을 설정한다.
+- comment_no 칼럼에서 jdbcType 속성에 정의한 bigint 값을 보고 JDBC가 내부적으로 값을 처리할 때 값의 타입을 bigint로 인식한다. JDBC 타입의 종류는 java.sql.Types 클래스를 보면 된다.
+- result 엘리먼트를 사용한 user_id 칼럼은 property 속성을 userId로 설정했기 때문에 댓글 객체의 userId 필드에 리플렉션으로 ㄱ밧을 설정하거나 setUserId 메서드를 사용해서 값을 설정한다.
+
+이렇게 resultMap 엘리먼트에 칼럼과 대상 필드 및 setter 메서드의 규칙을 정의해주면 칼럼명과 필드명이 다르더라도 값을 설정할 수 있다.
+
+이번 경우에는 칼럼명과 필드명의 명명 규칙 차이가 일관적이었다. 칼럼명은 전통적인 데이터베이스가 선택하는 _(언더 바) 방식을 사용했고, 모델 클래스는 자바가 사용하는 낙타표기법을 사용했다.
+
+마이바티스에서는 이러한 전통적인 명명 규칙 간의 차이를 쉽게 해결하기 위해 별도로 mapUnserscoretoCamelCase 설정을 제공한다. 다시 결과 매핑을 사용하지 않는다고 가정해보자.
+
+각 컬럼과 setter 메서드를 생각해보면 다음고 ㅏ같다.
+- comment_no -> setComment_no()
+- user_id -> setUser_id()
+
+마이바티스 설정 파일의 mapUnderscoreToCamelCase 설정을 true로 설정하면 마이바티스는 다음과 같은 규칙을 자동으로 적용한다.
+
+- comment_no -> setCommentNo()
+- user_id -> setUserId()
+
+이렇ㅔㄱ 할 수 있는 배경은 전통적인 데이터베이스의 명명 규칙과 자바의 낙타표기법이 오랫동안 지속돼 왔고 일관적이라는 점에서 가능한 기능이다. 
+결과 매핑을 별도로 XML에 정의하는 것은 매핑 구문이 많아질수록 귀찮은 작업이 될 수 있다.  
+대부분의 경우 mapUnderscoreToCamelCase 설정을 사용해서 많은 부분을 자동으로 처리할 수 있다.  
+하지만 mapUnderscoreToCamelCase 설정을 사용할 때 별칭이 너무 길면 오류가 발생할 수 있다고도 한다.
+
+mapUnderscoreToCamelCase 설정을 프로젝트 전반에 사용할지는 약간의 테스트를 진행해서 판단하는 게 좋다.
+
+
+`mapUnderscoreToCamelCase` 옵션은 
+
+> 명명 규칙의 차이점이 있기 때문에 자동으로 매핑할 때는 대상을 찾기 어렵다. 하지만 데이터베이스와 자바는 사용하는 명명 규칙이 명확한 편이기 때문에 일정한 규칙을 부여하면 값을 매핑하는 데 어렵지 않다.
+> 이런 경우를 위해 언더바 형태를 낙타표현식으로 자동매핑할지에 대한 옵션이다. 이 옵션을 사용하지 않으면서 테이블의 칼럼명은 언더 바로 구분하고 자바 모델 클래스는 낙타 표기법을 사용할 경우 쿼리문에 칼럼별로 별칭을 사용하거나 별도의 결과 매핑을 사용해야 한다. 디폴트는 false이고 자동으로 매핑하지 않는다.
+
+> settings 엘리먼트를 사용해서 설정하는 각종 값은 SqlSesstionFacotry 객체가 SqlSession 객체를 만들 때 생성할 객체의 특성을 결정한다.
+> settings 엘리먼트의 하위 엘리먼트들은 대부분 디폴트 값을 가진다.
