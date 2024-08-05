@@ -181,22 +181,25 @@ $.ajax({
 
 이 설정을 활용하여 프론트(JSP) 단에 있던 **for문을 다시 제거**한 뒤 **VO에는 `_total`이 붙은 필드 이름을 카멜케이스로 바꿔** 마무리했다.
 
-기존 4천 줄이던 쿼리문을 30%를 줄여 2천 8백 줄로 한결 깔끔하게 보도록 수정을 완료했고, 번거로운 노가다 작업도 한 줌 덜게 되었다.
+기존 4천 라인이던 코드를 2천 8백 라인으로 수정을 완료했고, 번거로운 작업도 한 줌 덜게 되었다.
 
 ---
 
 ## MyBatis의 매핑 원리와 세팅 옵션 이해하기
 
-
 ### MyBatis 매핑 원리
 
-#### 매핑 구문에 리절트 타입 속성을 지정하면?
+#### 매핑 구문에 resultType 속성을 지정했을 때의 모습
 
-![매핑 구문에 리절트 타입 속성을 지정하면 이렇게 됩니다](mappingPrinciple.png)
+![매핑 구문에 리절트 타입 속성을 지정하면 이렇게 된다](mappingPrinciple.png)
 
-#### 반환된 조회 결과는 Reuslt 객체에 어떻게 바인딩 될까?
+`매핑 구문`을 실행한 다음 `resultType 속성`으로 반환된 **결과를 바인딩** 해준다.   
+result 전달에 사용한 객체를 `result 객체`라고 이해하면 된다.
 
-1. ResultSet Handler가 resultType 속성 값에 지정한 result Type의 객체를 생성한 다음, ResultSet에 담긴 조회 결과를 바인딩합니다.
+
+#### 반환된 조회 결과는 result 객체에 어떻게 바인딩 될까?
+
+1. ResultSet Handler가 resultType 속성 값에 지정한 resultType의 객체를 생성한 다음, ResultSet에 담긴 조회 결과를 바인딩합니다.
    - 이 과정에서 **오브젝트 팩토리와 타입 핸들러, 프로퍼티** 등이 함께 사용됩니다.
    - org.apache.ibatis.executor.resultset.DefaultResultSetHandler 클래스를 살펴보면
      - 매핑 구문을 실행한 다음 반환된 ResultSet에 결과가 존재하면, 오브젝트 팩토리는 resultType 속성 값에 지정한 Result 객체를 생성한 다음 초기화합니다.
