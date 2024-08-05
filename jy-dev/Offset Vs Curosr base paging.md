@@ -1,3 +1,4 @@
+# Offset VS Cursor base paging
 이번 주제에서는 MySQL를 사용하여 천만개의 데이터를 기준으로 전체 데이터를 조회하는 경우에서 Offset를 왜 사용하지 않아야 하는지 알아보도록 하겠습니다.
 
 # Data 생성
