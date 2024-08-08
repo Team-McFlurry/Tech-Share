@@ -199,24 +199,31 @@ result 전달에 사용한 객체를 `result 객체`라고 이해하면 된다.
 
 #### 반환된 조회 결과는 result 객체에 어떻게 바인딩 될까?
 
-1. ResultSet Handler가 resultType 속성 값에 지정한 resultType의 객체를 생성한 다음, ResultSet에 담긴 조회 결과를 바인딩합니다.
-   - 이 과정에서 **오브젝트 팩토리와 타입 핸들러, 프로퍼티** 등이 함께 사용됩니다.
-   - org.apache.ibatis.executor.resultset.DefaultResultSetHandler 클래스를 살펴보면
-     - 매핑 구문을 실행한 다음 반환된 ResultSet에 결과가 존재하면, 오브젝트 팩토리는 resultType 속성 값에 지정한 Result 객체를 생성한 다음 초기화합니다.
-     - 그리고 Property와 TypeHandler를 통해서 Result 객체에 결과 값을 바인딩합니다.
+> ResultSet 핸들러는 resultType 속성에 지정한 타입의 객체를 생성한 다음 ResultSet에 담긴 조회 결과를 바인딩한다.
+> 
+> 그 과정에서 오브젝트 팩토리와 타입 핸들러, 프로퍼티가 사용된다.
 
-2. ResultSet Handler는 컬럼명과 프로퍼티명(자바빈즈)이 정해진 기준에 맞으면 프로퍼티 값에 컬럼 값을 바인딩합니다.
+DefaultResultSetHandler 클래스로 자세한 과정을 알아보자.
 
-3. 첫 번째 객체 타입 중 자바빈즈(클래스)에 ResultSet이 바인딩되는 과정을 알아보자면
-   - 조회한 컬럼명과 자바빈즈에 정의한 프로퍼티명을 각각 대문자로 변경한 다음 서로 비교했을 때 일치하면, 프로퍼티 값에 컬럼 값을 바인딩합니다.
-   - 이때, 자바빈즈 명세에 맞는 setter메서드가 정의되어 있지 않아도 Reflection을 통해서 프로퍼티에 컬럼 값을 바인딩합니다.
-     - 예를 들어, `BONUSITEM_TOTAL` 문자열이면, 컬럼명을 대문자로 변경한 문자열은 `BONUSITEM_TOTAL`이 됩니다.
-     - 위에서 설명한 바인딩 기준에 따라 자바빈즈에 정의한 프로퍼티명을 대문자로 변경했을 때, `BONUSITEM_TOTAL`과 **동일한 프로퍼티명**을 찾습니다.
-     - 대문자로 변경했을 때, `BONUSITEM_TOTAL` 문자열과 일치하는 `bonusitem_total` 프로퍼티명을 찾게 되면, 프로퍼티 값에 컬럼 값을 바인딩합니다.
+![결과매핑과정](결과매핑과정.png)
+
+매핑 구문을 실행한다
+-> 반환된 ResultSet에 결과가 존재하면
+-> `오브젝트 팩토리`는 **resultType 속성에 지정한 객체를 생성 및 초기화**한다  
+-> 컬럼명과 프로퍼티명이 맞으면 `프로퍼티의 설정 정보`와 `타입 핸들러의 타입 변환`를 통해서 생성한 **객체에 값을 바인딩**한다. 즉, 프로퍼티 값에 컬럼 값을 바인딩한다
+  
+
+`BONUSITEM_TOTAL`라는 이름의 컬럼이 출력되면 대소문자 상관없이 대문자로 비교했을 때 `BONUSITEM_TOTAL`과 비교해서 같으면 매핑된다.
 
 
-**프로퍼티명을 통상 CamelCase로 하니**, 이런 상황에서 바인딩을 하려면 MyBatis 설정 XML 파일의 `<settings>` 구성 요소에 `mapUnderscoreToCamelCase` 속성을 추가하고서 속성값에 `true`를 넣으면 프로퍼티명이 CamelCase여도 문제없이 바인딩이 가능합니다.
 
+### 자바빈즈 객체에 컬럼 값을 바인딩하는 과정
+
+
+#### mapUnderscoreToCamelCase가 false일 때
+
+
+#### mapUnderscoreToCamelCase가 true일 때
 
 
 
