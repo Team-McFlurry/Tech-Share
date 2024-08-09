@@ -161,12 +161,13 @@ $.ajax({
 $.ajax({
   ...
   success : function(result) {
-      let salaryTotal;
+      // 월급합계는 그 한달의 여러 종류의 월급을 합한 값
+      let 월급합계;
       for(해당 월급 타입의 개수) {
-        salaryTotal += 월급;
+        월급합계 += 월급;
       }
       
-      html += "<tr>" + salaryTotal + "</tr>";
+      html += "<tr>" + 월급합계 + "</tr>";
   }
 });
 ```
@@ -199,110 +200,61 @@ result 전달에 사용한 객체를 `result 객체`라고 이해하면 된다.
 
 #### 반환된 조회 결과는 result 객체에 어떻게 바인딩 될까?
 
-1. ResultSet Handler가 resultType 속성 값에 지정한 resultType의 객체를 생성한 다음, ResultSet에 담긴 조회 결과를 바인딩합니다.
-   - 이 과정에서 **오브젝트 팩토리와 타입 핸들러, 프로퍼티** 등이 함께 사용됩니다.
-   - org.apache.ibatis.executor.resultset.DefaultResultSetHandler 클래스를 살펴보면
-     - 매핑 구문을 실행한 다음 반환된 ResultSet에 결과가 존재하면, 오브젝트 팩토리는 resultType 속성 값에 지정한 Result 객체를 생성한 다음 초기화합니다.
-     - 그리고 Property와 TypeHandler를 통해서 Result 객체에 결과 값을 바인딩합니다.
+> ResultSet 핸들러는 resultType 속성에 지정한 타입의 객체를 생성한 다음 ResultSet에 담긴 조회 결과를 바인딩한다.
+> 
+> 그 과정에서 오브젝트 팩토리와 타입 핸들러, 프로퍼티가 사용된다.
 
-2. ResultSet Handler는 컬럼명과 프로퍼티명(자바빈즈)이 정해진 기준에 맞으면 프로퍼티 값에 컬럼 값을 바인딩합니다.
+DefaultResultSetHandler 클래스로 자세한 과정을 알아보자.
 
-3. 첫 번째 객체 타입 중 자바빈즈(클래스)에 ResultSet이 바인딩되는 과정을 알아보자면
-   - 조회한 컬럼명과 자바빈즈에 정의한 프로퍼티명을 각각 대문자로 변경한 다음 서로 비교했을 때 일치하면, 프로퍼티 값에 컬럼 값을 바인딩합니다.
-   - 이때, 자바빈즈 명세에 맞는 setter메서드가 정의되어 있지 않아도 Reflection을 통해서 프로퍼티에 컬럼 값을 바인딩합니다.
-     - 예를 들어, `BONUSITEM_TOTAL` 문자열이면, 컬럼명을 대문자로 변경한 문자열은 `BONUSITEM_TOTAL`이 됩니다.
-     - 위에서 설명한 바인딩 기준에 따라 자바빈즈에 정의한 프로퍼티명을 대문자로 변경했을 때, `BONUSITEM_TOTAL`과 **동일한 프로퍼티명**을 찾습니다.
-     - 대문자로 변경했을 때, `BONUSITEM_TOTAL` 문자열과 일치하는 `bonusitem_total` 프로퍼티명을 찾게 되면, 프로퍼티 값에 컬럼 값을 바인딩합니다.
+![결과매핑과정](resultMappingProcess.png)
 
+매핑 구문을 실행한다
+-> 반환된 ResultSet에 결과가 존재하면
+-> `오브젝트 팩토리`는 **resultType 속성에 지정한 객체를 생성 및 초기화**한다  
+-> 컬럼명과 프로퍼티명이 맞으면 `프로퍼티의 설정 정보`와 `타입 핸들러의 타입 변환`를 통해서 생성한 **객체에 값을 바인딩**한다. 즉, 프로퍼티 값에 컬럼 값을 바인딩한다
+  
 
-**프로퍼티명을 통상 CamelCase로 하니**, 이런 상황에서 바인딩을 하려면 MyBatis 설정 XML 파일의 `<settings>` 구성 요소에 `mapUnderscoreToCamelCase` 속성을 추가하고서 속성값에 `true`를 넣으면 프로퍼티명이 CamelCase여도 문제없이 바인딩이 가능합니다.
+`BONUSITEM_TOTAL`라는 이름의 컬럼이 출력되면 대소문자 상관없이 대문자로 비교했을 때 `BONUSITEM_TOTAL`과 비교해서 같으면 매핑된다.
 
 
 
+### 자바빈즈(VO) 객체에 컬럼 값을 바인딩하는 과정
 
-### 위의 상황에서 해줄 수 있는 매핑 세팅
+`<settings>` 구성 요소에 mapUnderscoreToCamelCase라는 옵션 설정 여부에 따라 바인딩하는 과정이 달라진다.
 
-데이터베이스에서 데이터를 가져온 후 자바 객체에 값을 넣기 위해 MyBatis는 `결과 매핑`이라는 기법을 제공합니다. 그 `결과 매핑`을 처리하기 위해 매핑 구문을 정의할 때처럼 XML 엘리먼트나 애노테이션을 사용할 수 있습니다.
+두 경우로 나눠 살펴볼 수 있다.
 
-마이바티스의 결과 매핑은 **칼럼명과 자바 모델(클래스)의 필드명** 혹은 **setter 메서드가 설정하고자 하는 값**과 일치하면 자동으로 값을 넣어줍니다.
+#### mapUnderscoreToCamelCase라는 속성 값이 없거나 false일 때
 
-하지만 칼럼명과 일치하지 않는다면 별도로 값을 설정하는 규칙을 정의해야만 정확히 값을 설정할 수 있습니다.  
-이렇게 일치하지 않는 경우에 제가 겪었던 상황에서 활용할 수 있는, 값을 설정해주기 위해 제공하는 XML 엘리먼트와 속성은 다음과 같습니다.
+![mapUnderscoreToCamelCase값이 fasle일 때](mapUnderscoreToCamelCaseOptionedFalse.png)
 
-- resultMap : 결과 매핑을 사용하기 위한 가장 상위 엘리먼트
-  - 결과 매핑을 구분하기 위한 id 속성과, 매핑하는 대상 클래스를 정의하는 type 속성을 사용
-  - 예) 
-      ```xml
-      <resultMap id="EmpSalaryMap" type="EmpSalaryVO">
-      ...
-      </resultMap>
-      ```
-  - constructor : setter 메서드나 리플렉션을 통해 값을 설정하지 않고 **생성자를 통해 값을 설정할 때** 사용
-    - idArg : ID 인자
-    - arg : 생성자에 삽입되는 일반적인 결과
+조회한 `컬럼명`과 VO에 정의한 `프로퍼티명`을
+1. 각각 대문자로 변경한 다음
+2. 서로 비교했을 때 일치하면
+3. setter 메서드를 호출하여
+4. 프로퍼티 값에 컬럼 값을 바인딩한다.
+   - 이때, 자바빈즈 명세에 맞는 setter 메서드가 정의되어 있지 않아도, 런타임 때 동적으로 특정 클래스의 정보를 추출(reflection)하는 과정을 통해 프로퍼티에 컬럼 값을 바인딩한다.
+  
+#### mapUnderscoreToCamelCase라는 속성 값이 true일 때
 
+![mapUnderscoreToCamelCase값이 true일 때](mapUnderscoreToCamelCaseOptionedTrue.png)
 
-사원 연봉 예시를 다시 들고 오겠습니다
-
+MyBatis 설정 XML파일에
 ```xml
-<resultMap id="EmpSalaryMap" type="EmpSalaryVO">
-    <result column="BONUSITEM1" property="bonusitem1">
-    <result column="BONUSITEM2" property="bonusitem2">
-    <result column="BONUSITEM3" property="bonusitem3">
-    <result column="BONUSITEM4" property="bonusitem4">
-    <result column="BONUSITEM5" property="bonusitem5">
-    <result column="BONUSITEM6" property="bonusitem6">
-    <result column="BONUSITEM7" property="bonusitem7">
-    <result column="BONUSITEM8" property="bonusitem8">
-    <result column="BONUSITEM9" property="bonusitem9">
-    <result column="BONUSITEM10" property="bonusitem10">
-    <result column="BONUSITEM11" property="bonusitem11">
-    <result column="BONUSITEM_TOTAL" property="bonusitem_total">
-</resultMap>
-
-<select id="selectEmployeeSalary" parameterType="HashMap" resultMap="EmpSalaryMap">
-    select
-        A.ba1 AS BONUSITEM1,
-        A.ba2 AS BONUSITEM2,
-        A.ba3 AS BONUSITEM3,
-        A.bb1 AS BONUSITEM4,
-        A.bb2 AS BONUSITEM5,
-        A.bb3 AS BONUSITEM6,
-        A.bc1 AS BONUSITEM7,
-        A.bc2 AS BONUSITEM8,
-        A.bc3 AS BONUSITEM9,
-        B.bd1 AS BONUSITEM10,
-        B.dd2 AS BONUSITEM11,
-        (A.sum + B.sum) AS BONUSITEM_TOTAL
-    from emp_salarya A, emp_salaryb B
-    where id=#{id}
-</select>
+<settings>
+    <setting name="mapUnderscoreToCamelCase" value="true"/>
+</settings>
 ```
 
-상여금 합계에 해당하는 `bonusitem_total` 칼럼의 값을 객체에 자동으로 설정하기 위해서는 **대상 클래스가 bonusitem_total 이름의 필드**를 갖거나 **setBonusitem_total 이름의 setter 메서드**를 가져야만 합니다.
+`mapUnderscoreToCamelCase` 속성 값을 true로 지정하면, 바인딩 과정을 거치기 전에 컬럼명에서 먼저 `Underscore(_)`기호가 제거된다.
 
-만약, bonusitem_total 칼럼의 값을 낙타표기법으로 선언된 필드로 받고 싶다면 **bonusitemTotal 필드**나 **setBonusitemTotal 이름의 setter 메서드**를 사용해야 합니다.
-
-```xml
-<resultMap id="EmpSalaryMap" type="EmpSalaryVO">
-    ... 
-    <result column="bonusitem_total" property="bonusitemTotal" />
-</resultMap>
-```
-
-위의 resultMap은 **SQL에서 칼럼 값을 객체에 설정하는 결과 매핑을 설정**할 수 있습니다.  
-결과 매핑을 정의하는 resultMap 엘리먼트 하위에 둔 각각의 엘리먼트에서 대상 **칼럼명은 column 속성**에 선언하고, 클래스에서 설정하고자 하는 **필드명은 property 속성**에 선언하면 됩니다.
-
-이렇게 **resultMap 엘리먼트**에 칼럼과 대상 필드 및 setter 메서드의 규칙을 정의해주면 **칼럼명과 필드명이 다르더라도 값을 설정할 수 있습니다.**
-
-열심히 resultMap에 대해 설명을 드렸지만, 사실 resultMap을 안 써도 코드의 양을 줄이면서 충분히 매핑할 수 있는 방법이 있습니다.  
-MyBatis 설정 파일에서 `mapUnserscoretoCamelCase` 설정을 활용하면 됩니다.
-
-`결과 매핑`을 사용하지 않는다고 가정하고 각 컬럼과 setter 메서드를 사용하면 다음과 같습니다.
-- bonusitem_total -> setBonusitem_total()
-
-마이바티스 설정 파일의 `mapUnderscoreToCamelCase` 설정은 기본값이 false이며, true로 설정하면 다음과 같은 규칙이 자동으로 적용됩니다.
-
-- bonusitem_total -> setBonusitemTotal()
+1. 위 그림을 예시로 들면, `BONUSITEM_TOTAL` 컬럼명에서 `_` 기호를 제거한 다음 대문자로 변경하면 `BONUSITEMTOTAL`이라는 문자열이 된다.
+2. 그리고 VO에 정의한 `bonusitemTotal`을 대문자로 변경하면 `BONUSITEMTOTAL`이 되므로
+3. 1번과 2번에 나온 이 둘을 서로 비교했을 때 일치하면
+4. `bonusitemTotal`프로퍼티에 `BONUSITEM_TOTAL`컬럼의 값을 바인딩한다.
 
 
+## 코드 라인 수 줄인 게 엄청난 일은 아니지만
+
+1. 매 달마다 작업해야 하는 일의 노동력을 줄여 다른 곳에 에너지를 쓸 수 있음에 의의를 두고 있다.  
+2. 이 코드 말고도 내가 짠 `레거시` 코드 중에는 이번 주제와 같이 불필요한 코드가 많기에, 이를 줄이면서 혼재된 네이밍 컨벤션을 바로 잡는데 기여하려고 한다.
