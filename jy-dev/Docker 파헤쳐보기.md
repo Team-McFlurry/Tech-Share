@@ -115,11 +115,9 @@ Container 기반 인프라는 애플리케이션과 그 의존성을 격리된 �
 
 가장 어려운 실습인 Hello World를 Docker로 출력하는 실습을 진행하도록 하겠습니다.
 
-Container 기술은 Linux 커널의 기능을 이용해 만든 기술이기 때문에 Linux 환경이 아닌 경우 별도의 Linux OS를 가진 VM이 필요합니다.
+Container 기술은 OS 커널의 namespace와 cgroups같은 기술을 활용해 만든 기술이기 때문에 Container 생성에 필요한 기술을 지원하지 않는 Host OS인 경우 해당 기술을 지원하는 OS를 가진 VM이 필요합니다.
 
-Docker 같은 경우는 Docker Desktop을 통해 Linux가 아닌 OS에서도 도커를 실행할 수 있는 필수적인 요소들을 제공해줍니다.
-
-먼저 Docker Daemon이 필요하기 때문에 Docker를 설치하거나(Linux 환경인 경우) Docker Desktop(Window나 Mac인 경우)을 설치합니다.
+Docker 같은 경우는 Docker Desktop을 통해 Host OS가 Container 생성에 필요한 기술을 지원하지 않더라도 별도 VM으로 도커를 실행할 수 있는 필수적인 요소들을 제공해줍니다.
 
 ```bash
 // Docker Registry에서 busybox 이미지 pull
