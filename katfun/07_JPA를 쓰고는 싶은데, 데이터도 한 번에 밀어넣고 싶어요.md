@@ -5,7 +5,7 @@
 ## 목차
 
 1. 배경
-2. JPA르 쓰면 안 되나요?
+2. JPA를 쓰면 안 되나요?
 3. JdbcTemplate을 쓰면 어떨까요?
 4. 이렇게 썼어요
 5. 마무리
@@ -24,7 +24,7 @@
 
 기존에 JPA를 서비스 전반에 활용하고 있으면서, 이를 해치지 않고 성능 이점을 가져가기 위해 리팩토링을 진행했습니다.
 
-## JPA로 쓰면 안 되나요?
+## JPA를 쓰면 안 되나요?
 
 JPA는 아래와 같은 API를 제공합니다.
 
@@ -97,7 +97,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 ```
 
-눈여겨볼 점은 `datasource.url`의 `rewriteBatchedStatements=true` 옵션입니다. 위 옵션의 기본값은 `false`인데, true`로 설정해 주어야 JPA에서 bulk insert를 사용할 수 있습니다.
+눈여겨볼 점은 `datasource.url`의 `rewriteBatchedStatements=true` 옵션입니다. 위 옵션의 기본값은 `false`인데, `true`로 설정해 주어야 JPA에서 bulk insert를 사용할 수 있습니다.
 
 그리고 한 가지 더 주의할 점이 있는데요,
 
@@ -114,10 +114,10 @@ JdbcTemplate을 사용하는 방법도 있습니다. 장단점이 명확한데,
 * 장점: SQL을 직접 작성해서 호출하면 손쉽다.
 * 단점: SQL을 직접 작성해야 한다.
 
-JPA와는 여러모로 대척점에 있는 선택지라고 볼 수 있습니다. JPA의 `saveAll()`과 같은 목적으로 사용한다면, rJdbcTemplate`의 `batchUpdate()`를 사용할 수 있습니다.
+JPA와는 여러모로 대척점에 있는 선택지라고 볼 수 있습니다. JPA의 `saveAll()`과 같은 목적으로 사용한다면, `JdbcTemplate`의 `batchUpdate()`를 사용할 수 있습니다.
 
 ```java
-// NamedParamterJdbcTemplate.java
+// NamedParameterJdbcTemplate.java
 
 @Override
 public int[] batchUpdate(String sql, SqlParameterSource[] batchArgs) {
